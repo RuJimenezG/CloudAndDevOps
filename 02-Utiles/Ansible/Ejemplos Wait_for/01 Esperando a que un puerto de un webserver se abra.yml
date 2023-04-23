@@ -1,0 +1,21 @@
+- name: Validar si un webserver está levantado y abierto el puerto
+    tags: amvalidate1
+    wait_for:
+        host: "{{inventory_hostname}}"
+        port: "{{webserver_port}}"
+        delay: 10
+        timeout: 30
+        state: started
+        msg: "El puerto del WebServer no esta escuchando"
+    when: ansible_hostname == "{{inventory_hostname}}"
+    register: amvalidate1
+    ignore_errors: true
+    
+- name: Esperar a que el web server inicie.
+  local_action: 
+    module: wait_for
+    host: "{{ inventory_hostname }}"
+    port: "{{ webserver_port }}"
+    delay: 10
+    timeout: 300
+    state: started

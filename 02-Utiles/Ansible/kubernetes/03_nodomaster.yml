@@ -1,0 +1,41 @@
+- name: Creacion del nodo master
+  hosts: masters
+  become: yes
+  tasks:
+    - name: Inicializa el cluster con kubeadm
+      shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+      args:
+        chdir: $HOME
+        creates: cluster_initialized.txt
+
+    - name: crea el directorio .kube
+      become: yes
+      become_user: kube
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: 0755
+
+    - name: Copia el fichero admin.conf al config del usuario kube
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/kube/.kube/config
+        remote_src: yes
+        owner: kube
+
+    - name: Instala la red de Pods con Calico 
+      become: yes
+      become_user: kube
+      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml 
+      args:
+        chdir: $HOME
+        
+    - name: Obtiene el token para unir nodos worker al cluster
+      become: yes
+      become_user: kube
+      shell: kubeadm token create  --print-join-command
+      register: kubernetes_join_command
+
+    - name: Copia el comando join para usarlo después
+      become: yes
+      local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }}" dest="/tmp/kubernetes_join_command" mode=0777

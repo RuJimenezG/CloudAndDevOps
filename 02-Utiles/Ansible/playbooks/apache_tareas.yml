@@ -1,0 +1,14 @@
+- name: instalar apache
+  apt:
+    name: apache2
+    state: latest
+    update_cache: yes
+    
+- name: si o si apache encendido
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+    
+- name: que pase y vea los fuegos
+  shell: "ufw allow 'Apache'" 

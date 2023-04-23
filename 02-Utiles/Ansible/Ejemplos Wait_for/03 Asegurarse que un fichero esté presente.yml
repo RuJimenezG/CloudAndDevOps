@@ -1,0 +1,11 @@
+- name: Asegurarse que un fichero está presente
+  tags: filepresensevalidation
+  register: filepresensevalidation
+  wait_for:
+    path:  "{{logfile}}"
+    delay: 10
+    timeout: 30
+    state: present
+    msg: "Specified LOG FILE is not present"
+  when: ansible_hostname == "{{groups['app'][0]}}" and adminlogfile is defined
+  ignore_errors: true

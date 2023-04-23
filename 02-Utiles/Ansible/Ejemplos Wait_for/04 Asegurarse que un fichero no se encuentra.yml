@@ -1,0 +1,7 @@
+- name: Asegurarse que un fichero ha sido eliminado o no se encuentra
+  wait_for:
+    path:  "{{lockfile}}"
+    delay: 10
+    timeout: 30
+    state: absent
+    msg: "Specified LOCK FILE is still present"

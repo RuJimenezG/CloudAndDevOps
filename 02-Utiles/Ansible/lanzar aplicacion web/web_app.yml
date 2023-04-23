@@ -1,0 +1,64 @@
+---
+- name: Lanzamiento de una app
+  hosts: all
+  gather_facts: no
+
+  vars:
+    app_url: "http://127.0.0.1:5020"
+
+  tasks:
+  
+  - name: directorio
+    file:
+      path:  /home/usuario/app
+      state: directory
+
+  - name: Copia fichero existente   
+    copy:
+      src: app/main.py
+      dest: /home/usuario/app/main.py
+  
+  - name: Copia fichero existente   
+    copy:
+      src: requirements.txt
+      dest: /home/usuario/app/requirements.txt
+  # aquí nos faltaría llevar los ficheros de la aplicación al nodo remoto
+  # carpeta app y requirements.txt
+  
+  - name: Instalamos los requirements para las dependencias de python en el nodo1
+    command: pip3 install -r app/requirements.txt
+  
+  - name: Iniciamos la Web app (async 20 mantiene la app en el background 20 seg)."
+    command: python3 app/main.py
+    async: 20
+    poll: 0
+    changed_when: no
+
+  - name: solicita la web (debería fallar)
+    uri:
+      url: "{{ app_url }}"
+    register: app_hp
+    ignore_errors: yes
+
+  - name: Muestra el codigo HTTP devuelto por la pagina
+    debug:
+      msg: "Codigo HTTP devuelto por la App {{ app_hp.status }}"
+
+  - name: Esperar hasta obtener 'status' en 'READY'
+    uri:
+      url: "{{ app_url }}/status"
+    register: app_status
+    until: app_status.json.status == "READY"
+    retries: 10
+    delay: 1
+    
+  - name: solicita la web (debería funcionar)
+    uri:
+      url: "{{ app_url }}"
+    register: app_hp
+
+  - name: Muestra el codigo HTTP devuelto por la pagina
+    debug:
+      msg: 
+        - "Codigo HTTP devuelto por la Web {{ app_hp.status }}"
+        - "Contenido de la Web page: {{ lookup('url', app_url) }}"

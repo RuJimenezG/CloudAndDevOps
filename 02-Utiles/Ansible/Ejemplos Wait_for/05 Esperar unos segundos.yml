@@ -1,0 +1,10 @@
+---
+  - name: Esperar unos segundos
+    hosts: app
+    gather_facts: no
+    tasks:
+       -  name: Dormir por 60 segundos
+          tags: sleep60
+          wait_for:
+            delay: 60
+            timeout: 0

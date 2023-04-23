@@ -1,0 +1,16 @@
+---
+  - name: Instalar curl, vim y mostrar directorio usuario
+    hosts: grupo1
+    tasks:
+      - name: instalar curl
+        apt:
+          name: curl
+          state: present
+      - name: instalar vim
+        apt:
+          name: vim
+          state: present
+      - name: mostrar directorio usuario
+        shell: ls /home/ruben
+        register: salida
+      - debug: var=salida.stdout_lines
